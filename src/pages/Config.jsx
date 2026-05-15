@@ -7,101 +7,204 @@ const supabase = createClient(
 )
 
 export default function Config() {
+
   const [user, setUser] = useState(null)
-  const [nombre, setNombre] = useState('')
-  const [telefono, setTelefono] = useState('')
-  const [contacto, setContacto] = useState('')
 
   useEffect(() => {
     obtenerUsuario()
   }, [])
 
+  // OBTENER USUARIO
   const obtenerUsuario = async () => {
-    const { data: userData } = await supabase.auth.getUser()
+
+    const { data: userData } =
+      await supabase.auth.getUser()
+
     if (!userData?.user) return
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('usuarios')
       .select('*')
       .eq('id', userData.user.id)
       .single()
 
-    setUser(data)
-    setNombre(data?.nombre || '')
-    setTelefono(data?.telefono || '')
-    setContacto(data?.contacto_emergencia || '')
-  }
-
-  const guardarCambios = async () => {
-    try {
-      const { data: userData } = await supabase.auth.getUser()
-
-      await supabase
-        .from('usuarios')
-        .update({
-          nombre,
-          telefono,
-          contacto_emergencia: contacto
-        })
-        .eq('id', userData.user.id)
-
-      alert('Datos actualizados ✅')
-    } catch (err) {
-      console.log(err)
-      alert('Error ❌')
+    if (error) {
+      console.log(error)
+      return
     }
+
+    setUser(data)
   }
 
+  // CERRAR SESION
   const cerrarSesion = async () => {
+
     await supabase.auth.signOut()
-    location.reload() // vuelve al login
+
+    location.reload()
   }
 
   return (
+
     <div className="config-container">
 
+      {/* HEADER */}
       <div className="config-header">
-        <h1>⚙️ Configuración</h1>
-        <p>Administra tu cuenta y seguridad</p>
+
+        <div>
+          <h1>⚙️ Configuración</h1>
+
+          <p>
+            Centro de administración y monitoreo del sistema
+          </p>
+        </div>
+
+        <div className="status-badge">
+          🟢 Sistema activo
+        </div>
+
       </div>
 
+      {/* PERFIL DESTACADO */}
+      <div className="profile-banner">
+
+        <div className="profile-avatar">
+          {user?.nombre?.charAt(0)?.toUpperCase() || 'U'}
+        </div>
+
+        <div className="profile-info">
+
+          <h2>
+            {user?.nombre || 'Usuario'}
+          </h2>
+
+          <p>
+            {user?.correo || 'correo@ejemplo.com'}
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* GRID */}
       <div className="config-grid">
 
         {/* PERFIL */}
         <div className="config-card">
-          <h3>👤 Perfil</h3>
 
-          <label>Nombre</label>
-          <input value={nombre} onChange={e => setNombre(e.target.value)} />
+          <div className="card-top">
+            <h3>👤 Información personal</h3>
+          </div>
 
-          <label>Teléfono</label>
-          <input value={telefono} onChange={e => setTelefono(e.target.value)} />
+          <div className="config-info">
+            <span>Nombre usuario</span>
+            <p>{user?.nombre || 'No disponible'}</p>
+          </div>
 
-          <label>Contacto emergencia</label>
-          <input value={contacto} onChange={e => setContacto(e.target.value)} />
+          <div className="config-info">
+            <span>Correo principal</span>
 
-          <button className="btn-save" onClick={guardarCambios}>
-            Guardar cambios
-          </button>
+            <p className="email">
+              {user?.correo || 'No disponible'}
+            </p>
+          </div>
+
+          <div className="config-info">
+            <span>Correo emergencia</span>
+
+            <p className="email">
+              {user?.correo_emergencia || 'No disponible'}
+            </p>
+          </div>
+
         </div>
 
         {/* SEGURIDAD */}
         <div className="config-card">
-          <h3>🔒 Seguridad</h3>
-          <p>Estado: <span className="ok">Protegido</span></p>
-          <p>Dispositivo activo: ✔</p>
+
+          <div className="card-top">
+            <h3>🛡 Seguridad</h3>
+          </div>
+
+          <div className="security-item">
+            <div>
+              <strong>Protección activa</strong>
+              <p>Sistema monitoreando eventos</p>
+            </div>
+
+            <span className="green-dot"></span>
+          </div>
+
+          <div className="security-item">
+            <div>
+              <strong>Alertas automáticas</strong>
+              <p>Notificaciones habilitadas</p>
+            </div>
+
+            <span className="green-dot"></span>
+          </div>
+
+          <div className="security-item">
+            <div>
+              <strong>Base de datos</strong>
+              <p>Conectada correctamente</p>
+            </div>
+
+            <span className="green-dot"></span>
+          </div>
+
         </div>
 
-        {/* SESIÓN */}
+        {/* SISTEMA */}
         <div className="config-card">
-          <h3>Sesión</h3>
 
-          <button className="btn-logout" onClick={cerrarSesion}>
+          <div className="card-top">
+            <h3>📊 Estado sistema</h3>
+          </div>
+
+          <div className="system-stats">
+
+            <div className="mini-stat">
+              <h4>ONLINE</h4>
+              <p>Servidor</p>
+            </div>
+
+            <div className="mini-stat">
+              <h4>24/7</h4>
+              <p>Monitoreo</p>
+            </div>
+
+            <div className="mini-stat">
+              <h4>v1.0</h4>
+              <p>Versión</p>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* SESION */}
+        <div className="config-card logout-card">
+
+          <div className="card-top">
+            <h3>🚪 Sesión</h3>
+          </div>
+
+          <p className="logout-text">
+            Cierra tu sesión actual de forma segura.
+          </p>
+
+          <button
+            className="btn-logout"
+            onClick={cerrarSesion}
+          >
             Cerrar sesión
           </button>
+
         </div>
 
       </div>
+
     </div>
   )
 }
